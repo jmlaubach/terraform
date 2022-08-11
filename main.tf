@@ -157,7 +157,7 @@ resource "aws_lb_target_group" "webserver-tg" {
     name = "webserver-tg"
     port = 80
     protocol = "HTTP"
-    vpc_id = aws_vpc.prod-vpc.id
+    vpc_id = aws_vpc.webserver-vpc.id
 }
 
 resource "aws_autoscaling_attachment" "webserver-ag-to-tg" {
@@ -207,7 +207,7 @@ resource "aws_security_group" "webserver-instance-sg" {
     security_groups = [aws_security_group.webserver-lb-sg.id]
   }
 
-  vpc_id = aws_vpc.prod-vpc.id
+  vpc_id = aws_vpc.webserver-vpc.id
 }
 
 resource "aws_security_group" "webserver-lb-sg" {
@@ -233,5 +233,5 @@ resource "aws_security_group" "webserver-lb-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  vpc_id = aws_vpc.prod-vpc.id
+  vpc_id = aws_vpc.webserver-vpc.id
 }
