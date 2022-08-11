@@ -44,7 +44,7 @@ resource "aws_internet_gateway" "gw" {
     vpc_id = aws_vpc.prod-vpc.id
 }
 
-# # Create Custom Route Table
+# # Create Custom Route Tables
 
 resource "aws_route_table" "prod-route-table" {
     vpc_id = aws_vpc.prod-vpc.id
@@ -64,9 +64,27 @@ resource "aws_route_table" "prod-route-table" {
     }
 }
 
+resource "aws_route_table" "web-route-table" {
+    vpc_id = aws_vpc.prod-vpc.id
+
+    route {
+        cidr_block = "0.0.0.0/0"
+        gateway_id = aws_internet_gateway.gw.id
+    }
+
+    route {
+        ipv6_cidr_block = "::/0"
+        gateway_id      = aws_internet_gateway.gw.id
+    }
+
+    tags = {
+        Name = "Prod"
+    }
+}
+
 # # Create Subnets
 
-resource "aws_subnet" "webserver-subnet-1" {
+resource "aws_subnet" "webserver-subnet" {
     vpc_id            = aws_vpc.prod-vpc.id
     cidr_block        = "10.0.1.0/24"
     availability_zone = "us-east-1a"
@@ -76,24 +94,9 @@ resource "aws_subnet" "webserver-subnet-1" {
     }
 }
 
-resource "aws_subnet" "webserver-subnet-2" {
-    vpc_id            = aws_vpc.prod-vpc.id
-    cidr_block        = "10.0.2.0/24"
-    availability_zone = "us-east-1b"
-
-    tags = {
-        Name = "webserver-subnet-2"
-    }
-}
-
 # # Associate subnet with Route Table
 resource "aws_route_table_association" "sub_one" {
-    subnet_id      = aws_subnet.webserver-subnet-1.id
-    route_table_id = aws_route_table.prod-route-table.id
-}
-
-resource "aws_route_table_association" "sub_two" {
-    subnet_id      = aws_subnet.webserver-subnet-2.id
+    subnet_id      = aws_subnet.webserver-subnet.id
     route_table_id = aws_route_table.prod-route-table.id
 }
 
