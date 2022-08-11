@@ -16,7 +16,7 @@ resource "aws_launch_configuration" "webserver-test" {
     name_prefix = "webserver-lc-test-"
     image_id = var.webserver-ami
     instance_type = "t2.micro"
-    security_groups = aws_security_group.webserver-instance-sg.id
+    security_groups = [aws_security_group.webserver-instance-sg.id]
     user_data = <<-EOF
                   #!/bin/bash
                   sudo apt update -y
@@ -119,7 +119,7 @@ resource "aws_lb" "webserver-lb" {
     name = "webserver-lb"
     internal = false
     load_balancer_type = "application"
-    security_groups = aws_security_group.webserver-lb-sg.id
+    security_groups = [aws_security_group.webserver-lb-sg.id]
     subnets = [aws_subnet.webserver-subnet-1.id, aws_subnet.webserver-subnet-2.id]
 }
 
@@ -213,6 +213,8 @@ resource "aws_security_group" "webserver-lb-sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  vpc_id = aws_vpc.prod-vpc.id
 }
 
 # # Create Ubuntu server and install/enable apache2
