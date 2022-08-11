@@ -17,6 +17,7 @@ resource "aws_launch_configuration" "webserver-test" {
     image_id = var.webserver-ami
     instance_type = "t2.micro"
     security_groups = [aws_security_group.webserver-instance-sg.id]
+    key_name = "ssh-host"
     user_data = <<-EOF
                   #!/bin/bash
                   sudo apt update -y
@@ -197,7 +198,7 @@ resource "aws_security_group" "webserver-instance-sg" {
     to_port         = 22
     protocol        = "tcp"
     cidr_blocks     = ["10.0.1.22/32"]
-    security_groups = [aws_security_group.ssh-traffic-sg.id]
+    security_groups = [aws_security_group.ssh-traffic-sg.id, aws_security_group.webserver-lb-sg.id]
   }
   
   ingress {
@@ -230,6 +231,14 @@ resource "aws_security_group" "webserver-instance-sg" {
 
 resource "aws_security_group" "webserver-lb-sg" {
   name = "webserver-lb-sg"
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks     = ["10.0.1.22/32"]
+    security_groups = [aws_security_group.ssh-traffic-sg.id]
+  }
+  
   ingress {
     from_port   = 80
     to_port     = 80
