@@ -1,10 +1,16 @@
 provider "aws" {
     region= "us-east-1"
     profile = "default"
-    shared_credentials_file = "C:\Users\jlaubach\.aws\credentials"
+    shared_credentials_file = "/Users/jlaubach/.aws/credentials"
 }
 
-# # 0. Create launch configuration
+# # Variables
+
+variable "webserver-ami" {
+    type = string
+}
+
+# # Create launch configuration
 
 resource "aws_launch_configuration" "webserver-test" {
     name_prefix = "webserver-lc-test-"
@@ -23,7 +29,7 @@ resource "aws_launch_configuration" "webserver-test" {
     }
 }
 
-# # 1. Create vpc
+# # Create vpc
 
 resource "aws_vpc" "prod-vpc" {
     cidr_block = "10.0.0.0/16"
@@ -32,13 +38,13 @@ resource "aws_vpc" "prod-vpc" {
     }
 }
 
-# # 2. Create Internet Gateway
+# # Create Internet Gateway
 
 resource "aws_internet_gateway" "gw" {
     vpc_id = aws_vpc.prod-vpc.id
 }
 
-# # 3. Create Custom Route Table
+# # Create Custom Route Table
 
 resource "aws_route_table" "prod-route-table" {
     vpc_id = aws_vpc.prod-vpc.id
@@ -58,7 +64,7 @@ resource "aws_route_table" "prod-route-table" {
     }
 }
 
-# # 4. Create Subnets
+# # Create Subnets
 
 resource "aws_subnet" "webserver-subnet-1" {
     vpc_id            = aws_vpc.prod-vpc.id
@@ -80,7 +86,7 @@ resource "aws_subnet" "webserver-subnet-2" {
     }
 }
 
-# # 5. Associate subnet with Route Table
+# # Associate subnet with Route Table
 resource "aws_route_table_association" "sub_one" {
     subnet_id      = aws_subnet.webserver-subnet-1.id
     route_table_id = aws_route_table.prod-route-table.id
@@ -140,7 +146,7 @@ resource "aws_autoscaling_attachment" "webserver-ag-to-tg" {
     alb_target_group_arn = aws_lb_target_group.webserver-tg.id
 }
 
-# # 7. Create a network interface with an ip in the subnet that was created in step 4
+# # Create a network interface with an ip in the subnet that was created in step 4
 
 /* resource "aws_network_interface" "web-server-nic" {
     subnet_id       = aws_subnet.subnet-1.id
@@ -148,7 +154,7 @@ resource "aws_autoscaling_attachment" "webserver-ag-to-tg" {
     security_groups = [aws_security_group.allow_web.id]
 } */
 
-# # 8. Assign an elastic IP to the network interface created in step 7
+# # Assign an elastic IP to the network interface created in step 7
 
 /* resource "aws_eip" "one" {
     vpc                       = true
@@ -209,7 +215,7 @@ resource "aws_security_group" "webserver-lb-sg" {
   }
 }
 
-# # 9. Create Ubuntu server and install/enable apache2
+# # Create Ubuntu server and install/enable apache2
 
 /* resource "aws_instance" "web-server-instance" {
     ami               = "ami-052efd3df9dad4825"
