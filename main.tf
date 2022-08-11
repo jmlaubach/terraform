@@ -129,7 +129,7 @@ resource "aws_autoscaling_group" "webserver-asg" {
         key = "Name"
         value = "Webserver Test ASG"
         propagate_at_launch = true
-  }
+    }
 }
 
 # # Create a Load Balancer, Listener, and Target Group
@@ -139,7 +139,7 @@ resource "aws_lb" "webserver-lb" {
     internal = false
     load_balancer_type = "application"
     security_groups = [aws_security_group.webserver-lb-sg.id]
-    subnets = [aws_subnet.webserver-subnet.id]
+    subnets = [aws_subnet.webserver-subnet-1.id, aws_subnet.webserver-subnet-2.id]
 }
 
 resource "aws_lb_listener" "webserver-lb-listener" {
@@ -165,27 +165,41 @@ resource "aws_autoscaling_attachment" "webserver-ag-to-tg" {
     alb_target_group_arn = aws_lb_target_group.webserver-tg.id
 }
 
-# # Create a network interface with an ip in the subnet
-
-/* resource "aws_network_interface" "web-server-nic" {
-    subnet_id       = aws_subnet.subnet-1.id
-    private_ips     = ["10.0.1.50"]
-    security_groups = [aws_security_group.allow_web.id]
-} */
-
-# # Assign an elastic IP to the network interface
-
-/* resource "aws_eip" "one" {
-    vpc                       = true
-    network_interface         = aws_network_interface.web-server-nic.id
-    associate_with_private_ip = "10.0.1.50"
-    depends_on                = [aws_internet_gateway.gw]
-} */
-
 # # Create Security Groups
+
+resource "aws_security_group" "ssh-traffic-sg" {
+    name = "ssh-traffic-sg"
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    cidr_blocks     = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks     = ["0.0.0.0/0"]
+  }
+
+  vpc_id = aws_vpc.webserver-vpc.id
+
+  tags = {
+        Name = "ssh-traffic-sg"
+    }
+}
 
 resource "aws_security_group" "webserver-instance-sg" {
   name = "webserver-instance-sg"
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    cidr_blocks     = ["10.0.1.22/32"]
+    security_groups = [aws_security_group.ssh-traffic-sg.id]
+  }
+  
   ingress {
     from_port       = 80
     to_port         = 80
@@ -208,6 +222,10 @@ resource "aws_security_group" "webserver-instance-sg" {
   }
 
   vpc_id = aws_vpc.webserver-vpc.id
+
+  tags = {
+        Name = "webserver-instance-sg"
+    }
 }
 
 resource "aws_security_group" "webserver-lb-sg" {
@@ -234,4 +252,41 @@ resource "aws_security_group" "webserver-lb-sg" {
   }
 
   vpc_id = aws_vpc.webserver-vpc.id
+
+  tags = {
+        Name = "webserver-lb-sg"
+    }
+}
+
+# # Create network interface and EIP for ssh host
+
+resource "aws_network_interface" "ssh-host-nic" {
+    subnet_id = aws_subnet.webserver-subnet-1.id
+    private_ips = ["10.0.1.22"]
+    security_groups = [aws_security_group.ssh-traffic-sg.id]
+}
+
+resource "aws_eip" "ssh-host-eip" {
+    vpc = true
+    network_interface = aws_network_interface.ssh-host-nic.id
+    associate_with_private_ip = "10.0.1.22"
+    depends_on = [aws_internet_gateway.gw]
+}
+
+# # Create ssh host instance
+
+resource "aws_instance" "ssh-host" {
+    ami = "ami-052efd3df9dad4825"
+    instance_type = "t2.micro"
+    availability_zone = "us-east-1a"
+    key_name = "ssh-host"
+
+    network_interface {
+        device_index = 0
+        network_interface_id = aws_network_interface.ssh-host-nic.id
+    }
+
+    tags = {
+    Name = "ssh-host"
+    }
 }
