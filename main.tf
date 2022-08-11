@@ -22,7 +22,7 @@ resource "aws_launch_configuration" "webserver-test" {
                   sudo apt update -y
                   sudo apt install apache2 -y
                   sudo systemctl start apache2
-                  sudo bash -c 'echo your very first web server > /var/www/html/index.html'
+                  sudo bash -c 'This is a test webserver. > /var/www/html/index.html'
                   EOF
     lifecycle {
         create_before_destroy = true
@@ -146,7 +146,7 @@ resource "aws_autoscaling_attachment" "webserver-ag-to-tg" {
     alb_target_group_arn = aws_lb_target_group.webserver-tg.id
 }
 
-# # Create a network interface with an ip in the subnet that was created in step 4
+# # Create a network interface with an ip in the subnet
 
 /* resource "aws_network_interface" "web-server-nic" {
     subnet_id       = aws_subnet.subnet-1.id
@@ -154,7 +154,7 @@ resource "aws_autoscaling_attachment" "webserver-ag-to-tg" {
     security_groups = [aws_security_group.allow_web.id]
 } */
 
-# # Assign an elastic IP to the network interface created in step 7
+# # Assign an elastic IP to the network interface
 
 /* resource "aws_eip" "one" {
     vpc                       = true
@@ -216,27 +216,3 @@ resource "aws_security_group" "webserver-lb-sg" {
 
   vpc_id = aws_vpc.prod-vpc.id
 }
-
-# # Create Ubuntu server and install/enable apache2
-
-/* resource "aws_instance" "web-server-instance" {
-    ami               = "ami-052efd3df9dad4825"
-    instance_type     = "t2.micro"
-    availability_zone = "us-east-1a"
-
-    network_interface {
-        device_index         = 0
-        network_interface_id = aws_network_interface.web-server-nic.id
-    }
-
-    user_data = <<-EOF
-                  #!/bin/bash
-                  sudo apt update -y
-                  sudo apt install apache2 -y
-                  sudo systemctl start apache2
-                  sudo bash -c 'echo your very first web server > /var/www/html/index.html'
-                  EOF
-    tags = {
-       Name = "web-server"
-    }
-} */
