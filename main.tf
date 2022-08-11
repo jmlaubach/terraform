@@ -31,23 +31,23 @@ resource "aws_launch_configuration" "webserver-test" {
 
 # # Create vpc
 
-resource "aws_vpc" "prod-vpc" {
+resource "aws_vpc" "webserver-vpc" {
     cidr_block = "10.0.0.0/16"
     tags = {
-      Name = "production"
+      Name = "webserver-vpc"
     }
 }
 
 # # Create Internet Gateway
 
 resource "aws_internet_gateway" "gw" {
-    vpc_id = aws_vpc.prod-vpc.id
+    vpc_id = aws_vpc.webserver-vpc.id
 }
 
 # # Create Custom Route Tables
 
-resource "aws_route_table" "prod-route-table" {
-    vpc_id = aws_vpc.prod-vpc.id
+resource "aws_route_table" "web-route-table-1" {
+    vpc_id = aws_vpc.webserver-vpc.id
 
     route {
         cidr_block = "0.0.0.0/0"
@@ -60,12 +60,12 @@ resource "aws_route_table" "prod-route-table" {
     }
 
     tags = {
-        Name = "Prod"
+        Name = "web-route-table-1"
     }
 }
 
-resource "aws_route_table" "web-route-table" {
-    vpc_id = aws_vpc.prod-vpc.id
+resource "aws_route_table" "web-route-table-2" {
+    vpc_id = aws_vpc.webserver-vpc.id
 
     route {
         cidr_block = "0.0.0.0/0"
@@ -78,14 +78,14 @@ resource "aws_route_table" "web-route-table" {
     }
 
     tags = {
-        Name = "Prod"
+        Name = "web-route-table-2"
     }
 }
 
 # # Create Subnets
 
-resource "aws_subnet" "webserver-subnet" {
-    vpc_id            = aws_vpc.prod-vpc.id
+resource "aws_subnet" "webserver-subnet-1" {
+    vpc_id            = aws_vpc.webserver-vpc.id
     cidr_block        = "10.0.1.0/24"
     availability_zone = "us-east-1a"
 
@@ -94,10 +94,26 @@ resource "aws_subnet" "webserver-subnet" {
     }
 }
 
-# # Associate subnet with Route Table
-resource "aws_route_table_association" "sub_one" {
-    subnet_id      = aws_subnet.webserver-subnet.id
-    route_table_id = aws_route_table.prod-route-table.id
+resource "aws_subnet" "webserver-subnet-2" {
+    vpc_id            = aws_vpc.webserver-vpc.id
+    cidr_block        = "10.0.2.0/24"
+    availability_zone = "us-east-1b"
+
+    tags = {
+        Name = "webserver-subnet-2"
+    }
+}
+
+# # Associate subnets with Route Tables
+
+resource "aws_route_table_association" "web-sub-1" {
+    subnet_id      = aws_subnet.webserver-subnet-1.id
+    route_table_id = aws_route_table.web-route-table-1.id
+}
+
+resource "aws_route_table_association" "web-sub-2" {
+    subnet_id      = aws_subnet.webserver-subnet-2.id
+    route_table_id = aws_route_table.web-route-table-2.id
 }
 
 # # Create an Autoscaling Group
@@ -123,7 +139,7 @@ resource "aws_lb" "webserver-lb" {
     internal = false
     load_balancer_type = "application"
     security_groups = [aws_security_group.webserver-lb-sg.id]
-    subnets = [aws_subnet.webserver-subnet-1.id, aws_subnet.webserver-subnet-2.id]
+    subnets = [aws_subnet.webserver-subnet.id]
 }
 
 resource "aws_lb_listener" "webserver-lb-listener" {
