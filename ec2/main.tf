@@ -14,7 +14,7 @@ variable "webserver-ami" {
 # # Create S3 bucket to host terraform state file
 
 resource "aws_s3_bucket" "state-bucket" {
-    bucket = "jlaubach-terraform-state"
+    bucket = "jlaubach-terraform-state-ec2"
     versioning {
       enabled = true
     }
@@ -28,7 +28,7 @@ resource "aws_s3_bucket" "state-bucket" {
 }
 
 resource "aws_dynamodb_table" "state-lock" {
-    name         = "jlaubach-terraform-lock"
+    name         = "jlaubach-terraform-lock-ec2"
     billing_mode = "PAY_PER_REQUEST"
     hash_key     = "LockID"
     attribute {
@@ -39,10 +39,10 @@ resource "aws_dynamodb_table" "state-lock" {
 
 terraform {
     backend "s3" {
-      bucket         = "jlaubach-terraform-state"
+      bucket         = "jlaubach-terraform-state-ec2"
       key            = "global/s3/terraform.tfstate"
       region         = "us-east-1"
-      dynamodb_table = "jlaubach-terraform-lock"
+      dynamodb_table = "jlaubach-terraform-lock-ec2"
       encrypt        = true
       shared_credentials_file = "/Users/jlaubach/.aws/credentials"
     }
@@ -50,7 +50,7 @@ terraform {
 
 # # Create launch configuration
 
-resource "aws_launch_configuration" "webserver-test" {
+/* resource "aws_launch_configuration" "webserver-test" {
     name_prefix     = "webserver-lc-test-"
     image_id        = var.webserver-ami
     instance_type   = "t2.micro"
@@ -336,4 +336,4 @@ resource "aws_instance" "ssh-host" {
     tags = {
     Name = "ssh-host"
     }
-}
+} */
