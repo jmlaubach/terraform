@@ -30,7 +30,7 @@ resource "aws_launch_configuration" "webserver-test" {
     }
 }
 
-# # Create vpc
+# # Create VPC
 
 resource "aws_vpc" "webserver-vpc" {
     cidr_block = "10.0.0.0/16"
