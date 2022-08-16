@@ -49,11 +49,11 @@ terraform {
 # # Create launch configuration
 
 resource "aws_launch_configuration" "webserver-test" {
-    name_prefix = "webserver-lc-test-"
-    image_id = var.webserver-ami
-    instance_type = "t2.micro"
+    name_prefix     = "webserver-lc-test-"
+    image_id        = var.webserver-ami
+    instance_type   = "t2.micro"
     security_groups = [aws_security_group.webserver-instance-sg.id]
-    key_name = "ssh-host"
+    key_name        = "ssh-host"
     user_data = <<-EOF
                   #!/bin/bash
                   sudo apt update -y
@@ -157,13 +157,13 @@ resource "aws_route_table_association" "web-sub-2" {
 
 resource "aws_autoscaling_group" "webserver-asg" {
     name = "webserver-asg"
-    min_size = 1
-    max_size = 3
-    desired_capacity = 1
+    min_size             = 1
+    max_size             = 3
+    desired_capacity     = 1
     launch_configuration = aws_launch_configuration.webserver-test.id
-    vpc_zone_identifier = [aws_subnet.webserver-subnet-1.id, aws_subnet.webserver-subnet-2.id]
+    vpc_zone_identifier  = [aws_subnet.webserver-subnet-1.id, aws_subnet.webserver-subnet-2.id]
     tag {
-        key = "Name"
+        key   = "Name"
         value = "Webserver Test ASG"
         propagate_at_launch = true
     }
@@ -172,34 +172,34 @@ resource "aws_autoscaling_group" "webserver-asg" {
 # # Create a Load Balancer, Listener, and Target Group
 
 resource "aws_lb" "webserver-lb" {
-    name = "webserver-lb"
-    internal = false
+    name               = "webserver-lb"
+    internal           = false
     load_balancer_type = "application"
-    security_groups = [aws_security_group.webserver-lb-sg.id]
-    subnets = [aws_subnet.webserver-subnet-1.id, aws_subnet.webserver-subnet-2.id]
+    security_groups    = [aws_security_group.webserver-lb-sg.id]
+    subnets            = [aws_subnet.webserver-subnet-1.id, aws_subnet.webserver-subnet-2.id]
 }
 
 resource "aws_lb_listener" "webserver-lb-listener" {
     load_balancer_arn = aws_lb.webserver-lb.id
-    port = "80"
-    protocol = "HTTP"
+    port              = "80"
+    protocol          = "HTTP"
 
     default_action {
-        type = "forward"
+        type             = "forward"
         target_group_arn = aws_lb_target_group.webserver-tg.id
     }
 }
 
 resource "aws_lb_target_group" "webserver-tg" {
-    name = "webserver-tg"
-    port = 80
+    name     = "webserver-tg"
+    port     = 80
     protocol = "HTTP"
-    vpc_id = aws_vpc.webserver-vpc.id
+    vpc_id   = aws_vpc.webserver-vpc.id
 }
 
 resource "aws_autoscaling_attachment" "webserver-ag-to-tg" {
     autoscaling_group_name = aws_autoscaling_group.webserver-asg.id
-    alb_target_group_arn = aws_lb_target_group.webserver-tg.id
+    alb_target_group_arn   = aws_lb_target_group.webserver-tg.id
 }
 
 # # Create Security Groups
@@ -268,9 +268,9 @@ resource "aws_security_group" "webserver-instance-sg" {
 resource "aws_security_group" "webserver-lb-sg" {
   name = "webserver-lb-sg"
   ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
     cidr_blocks     = ["10.0.1.22/32"]
     security_groups = [aws_security_group.ssh-traffic-sg.id]
   }
@@ -306,28 +306,28 @@ resource "aws_security_group" "webserver-lb-sg" {
 # # Create network interface and EIP for ssh host
 
 resource "aws_network_interface" "ssh-host-nic" {
-    subnet_id = aws_subnet.webserver-subnet-1.id
-    private_ips = ["10.0.1.22"]
+    subnet_id       = aws_subnet.webserver-subnet-1.id
+    private_ips     = ["10.0.1.22"]
     security_groups = [aws_security_group.ssh-traffic-sg.id]
 }
 
 resource "aws_eip" "ssh-host-eip" {
     vpc = true
-    network_interface = aws_network_interface.ssh-host-nic.id
+    network_interface         = aws_network_interface.ssh-host-nic.id
     associate_with_private_ip = "10.0.1.22"
-    depends_on = [aws_internet_gateway.gw]
+    depends_on                = [aws_internet_gateway.gw]
 }
 
 # # Create ssh host instance
 
 resource "aws_instance" "ssh-host" {
-    ami = "ami-052efd3df9dad4825"
-    instance_type = "t2.micro"
+    ami               = "ami-052efd3df9dad4825"
+    instance_type     = "t2.micro"
     availability_zone = "us-east-1a"
-    key_name = "ssh-host"
+    key_name          = "ssh-host"
 
     network_interface {
-        device_index = 0
+        device_index         = 0
         network_interface_id = aws_network_interface.ssh-host-nic.id
     }
 
