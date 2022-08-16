@@ -1,7 +1,8 @@
 provider "aws" {
     region  = "us-east-1"
     profile = "default"
-    shared_credentials_file = "/Users/jlaubach/.aws/credentials"
+    shared_credentials_file = "/Users/jmlst/.aws/credentials"
+#    shared_credentials_file = "/Users/jlaubach/.aws/credentials"
 }
 
 # # Variables
@@ -43,6 +44,7 @@ terraform {
       region         = "us-east-1"
       dynamodb_table = "jlaubach-terraform-lock"
       encrypt        = true
+      shared_credentials_file = "/Users/jlaubach/.aws/credentials"
     }
 }
 
