@@ -39,7 +39,7 @@ resource "aws_route" "internet_access" {
 resource "aws_eip" "eip" {
   count      = var.az_count
   vpc        = true
-  depends_on = [aws_internet_gateway.gw]
+  depends_on = [aws_internet_gateway.igw]
 }
 
 resource "aws_nat_gateway" "gw" {
