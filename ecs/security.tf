@@ -3,7 +3,7 @@
 resource "aws_security_group" "lb-sg" {
   name        = "apptest-load-balancer-security-group"
   description = "controls access to the ALB"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.main-vpc.id
 
   ingress {
     protocol    = "tcp"
@@ -24,7 +24,7 @@ resource "aws_security_group" "lb-sg" {
 resource "aws_security_group" "ecs-task-sg" {
   name        = "apptest-ecs-task-sg"
   description = "allow inbound access from the ALB only"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.main-vpc.id
 
   ingress {
     protocol        = "tcp"
