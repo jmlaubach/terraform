@@ -6,7 +6,7 @@ resource "aws_vpc" "main-vpc" {
   cidr_block = "10.10.0.0/16"
 }
 
-# Create var.az_count private subnets, each in a different AZ
+# Create private subnets, each in a different AZ
 resource "aws_subnet" "private-sub" {
   count             = var.az_count
   cidr_block        = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
@@ -14,7 +14,7 @@ resource "aws_subnet" "private-sub" {
   vpc_id            = aws_vpc.main-vpc.id
 }
 
-# Create var.az_count public subnets, each in a different AZ
+# Create public subnets, each in a different AZ
 resource "aws_subnet" "public-sub" {
   count                   = var.az_count
   cidr_block              = cidrsubnet(aws_vpc.main-vpc.cidr_block, 8, var.az_count + count.index)
@@ -59,7 +59,7 @@ resource "aws_route_table" "private-route" {
   }
 }
 
-# Explicitly associate the newly created route tables to the private subnets (so they don't default to the main route table)
+# Explicitly associate the newly created route tables to the private subnets
 resource "aws_route_table_association" "private" {
   count          = var.az_count
   subnet_id      = element(aws_subnet.private-sub.*.id, count.index)
