@@ -1,4 +1,4 @@
-# terraform
+# Terraform Practicing and Testing
 Practicing and testing various terraform configurations with AWS.
 
 This is an ongoing project used to test various configurations for use in real-world environments.
