@@ -15,12 +15,17 @@ variable "az_count" {
 
 variable "app_image" {
   description = "Docker image to run in the ECS cluster"
-  default     = "httpd:latest"
+  default     = "313349607551.dkr.ecr.us-east-1.amazonaws.com/jlaubach-wildfly-test:latest"
 }
 
 variable "app_port" {
-  description = "Port exposed by the docker image to redirect traffic to"
-  default     = 80
+  description = "Port exposed by the docker image to redirect traffic to it"
+  default     = 8080
+}
+
+variable "app_manage_port" {
+  description = "Port exposed by docker image for Wildfly management console"
+  default     = 9990
 }
 
 variable "app_count" {

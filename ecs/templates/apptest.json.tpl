@@ -17,6 +17,10 @@
       {
         "containerPort": ${app_port},
         "hostPort": ${app_port}
+      },
+      { 
+        "containerPort": ${app_manage_port},
+        "hostPort": ${app_manage_port}
       }
     ]
   }
